@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IPTV442WEB Player</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         * {
             margin: 0;
@@ -168,81 +167,84 @@
             margin-right: 8px;
         }
 
-        .player-section {
+        .main-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
             padding: 20px;
+            align-items: center;
+            justify-content: center;
         }
 
         .player-container {
-            position: relative;
             width: 100%;
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
-            background: #000;
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 15px;
-            overflow: hidden;
+            padding: 30px;
+            text-align: center;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
 
-        .video-wrapper {
-            position: relative;
-            padding-top: 56.25%;
-        }
-
-        #video-player {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-        }
-
-        .player-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.7);
-            pointer-events: none;
-            opacity: 1;
-            transition: opacity 0.3s ease;
-        }
-
-        .player-overlay.hidden {
-            opacity: 0;
-        }
-
-        .player-overlay-content {
-            text-align: center;
-        }
-
-        .player-overlay-content .icon {
-            font-size: 60px;
+        .player-icon {
+            font-size: 80px;
             margin-bottom: 20px;
+            color: #e94560;
         }
 
-        .player-overlay-content p {
-            font-size: 18px;
+        .player-message {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .player-instruction {
+            font-size: 16px;
             color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+        }
+
+        .hls-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #4285f4 0%, #0d47a1 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(66, 133, 244, 0.4);
+        }
+
+        .hls-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(66, 133, 244, 0.6);
+            background: linear-gradient(135deg, #4285f4 0%, #1565c0 100%);
+        }
+
+        .hls-button:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(66, 133, 244, 0.4);
+        }
+
+        .hls-button i {
+            font-size: 20px;
         }
 
         .now-playing {
-            margin-top: 20px;
+            margin-top: 30px;
             padding: 20px;
             background: rgba(0, 0, 0, 0.2);
             border-radius: 10px;
             display: flex;
             align-items: center;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
+            max-width: 800px;
             width: 100%;
         }
 
@@ -265,97 +267,6 @@
             font-size: 14px;
         }
 
-        .loading {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .loading.show {
-            display: block;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #e94560;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .error-message {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: #e94560;
-            pointer-events: auto;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .error-message button {
-            margin-top: 15px;
-            padding: 10px 25px;
-            background: #e94560;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .error-message button:hover {
-            background: #ff6b8a;
-        }
-
-        .proxy-selector {
-            margin-top: 10px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .proxy-selector label {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .proxy-selector select {
-            padding: 8px 15px;
-            border-radius: 5px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.3);
-            color: white;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .proxy-selector select:focus {
-            outline: none;
-            border-color: #e94560;
-        }
-
         .controls-hint {
             text-align: center;
             margin-top: 15px;
@@ -375,13 +286,13 @@
 
             .sidebar {
                 width: 100%;
-                max-height: 40vh;
+                max-height: 50vh;
                 border-left: none;
                 border-top: 1px solid rgba(255, 255, 255, 0.1);
                 order: 2;
             }
 
-            .player-section {
+            .main-panel {
                 order: 1;
                 padding: 10px;
             }
@@ -402,6 +313,22 @@
 
             .now-playing-logo {
                 margin: 0 0 15px 0;
+            }
+
+            .player-container {
+                padding: 20px;
+            }
+
+            .player-icon {
+                font-size: 60px;
+            }
+
+            .player-message {
+                font-size: 20px;
+            }
+
+            .player-instruction {
+                font-size: 14px;
             }
         }
 
@@ -429,39 +356,58 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
-        .player-controls {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
+        .additional-options {
+            margin-top: 20px;
             display: flex;
             gap: 10px;
-            z-index: 10;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
-        .control-btn {
-            background: rgba(0, 0, 0, 0.7);
-            border: none;
+        .option-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
-            padding: 10px 15px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
             transition: all 0.3s ease;
+        }
+
+        .option-btn:hover {
+            background: rgba(233, 69, 96, 0.2);
+            border-color: #e94560;
+        }
+
+        .channel-actions {
             display: flex;
-            align-items: center;
-            gap: 5px;
+            gap: 8px;
+            margin-top: 5px;
         }
 
-        .control-btn:hover {
-            background: rgba(233, 69, 96, 0.8);
+        .action-btn {
+            padding: 4px 12px;
+            background: rgba(66, 133, 244, 0.2);
+            border: 1px solid rgba(66, 133, 244, 0.3);
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s ease;
         }
 
-        .control-btn.hls-player {
-            background: rgba(66, 133, 244, 0.7);
+        .action-btn:hover {
+            background: rgba(66, 133, 244, 0.4);
         }
 
-        .control-btn.hls-player:hover {
-            background: rgba(66, 133, 244, 0.9);
+        .action-btn.copy {
+            background: rgba(233, 69, 96, 0.2);
+            border-color: rgba(233, 69, 96, 0.3);
+        }
+
+        .action-btn.copy:hover {
+            background: rgba(233, 69, 96, 0.4);
         }
     </style>
 </head>
@@ -475,45 +421,20 @@
         </header>
 
         <div class="main-content">
-            <section class="player-section">
+            <main class="main-panel">
                 <div class="player-container">
-                    <div class="video-wrapper">
-                        <video id="video-player" controls playsinline></video>
-                        <div class="player-overlay" id="player-overlay">
-                            <div class="player-overlay-content">
-                                <div class="icon">&#128250;</div>
-                                <p>Select a channel to start watching</p>
-                            </div>
-                        </div>
-                        <div class="loading" id="loading">
-                            <div class="spinner"></div>
-                        </div>
-                        <div class="error-message" id="error-message">
-                            <div class="icon">&#9888;</div>
-                            <p>Unable to load stream</p>
-                            <p style="font-size: 12px; margin-top: 10px;">The stream server may be down or blocking requests</p>
-                            <button onclick="retryCurrentChannel()">Retry with different proxy</button>
-                        </div>
-                        <div class="player-controls">
-                            <button class="control-btn" id="fullscreen-btn">
-                                <span>⛶</span> Fullscreen
-                            </button>
-                            <button class="control-btn hls-player" id="hls-player-btn" onclick="openInHLSPlayer()">
-                                <span>📺</span> Open in HLS Player
-                            </button>
-                        </div>
+                    <div class="player-icon">📺</div>
+                    <div class="player-message">HLS Player Ready</div>
+                    <div class="player-instruction">
+                        Select a channel from the list to open it in HLS Player extension
                     </div>
-                </div>
-
-                <div class="proxy-selector">
-                    <label for="proxy-select">Proxy Server:</label>
-                    <select id="proxy-select" onchange="changeProxy(this.value)">
-                        <option value="0">codetabs.com (Best for video)</option>
-                        <option value="1">corsproxy.io</option>
-                        <option value="2">allorigins.win</option>
-                        <option value="3">Direct (No Proxy)</option>
-                    </select>
-                    <button onclick="copyStreamUrl()" style="padding: 8px 15px; background: #e94560; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">Copy URL for VLC</button>
+                    <a href="#" class="hls-button" id="hls-launch-btn" onclick="openCurrentChannel()" style="display: none;">
+                        <i>▶</i>
+                        <span>Open in HLS Player</span>
+                    </a>
+                    <div id="no-channel" style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5);">
+                        No channel selected
+                    </div>
                 </div>
 
                 <div class="now-playing" id="now-playing" style="display: none;">
@@ -521,11 +442,15 @@
                     <div class="now-playing-info">
                         <h3 id="now-playing-name">-</h3>
                         <p id="now-playing-group">-</p>
+                        <div class="channel-actions">
+                            <button class="action-btn" onclick="openCurrentChannel()">Open in HLS</button>
+                            <button class="action-btn copy" onclick="copyStreamUrl()">Copy URL</button>
+                        </div>
                     </div>
                 </div>
 
-                <p class="controls-hint">Select a channel from the list. If playback fails, try a different proxy or quality.</p>
-            </section>
+                <p class="controls-hint">Click any channel to open it in HLS Player extension. Make sure the extension is installed.</p>
+            </main>
 
             <aside class="sidebar" id="sidebar">
                 <!-- Channels will be loaded here -->
@@ -537,6 +462,9 @@
         // Default logo for channels with broken/missing images
         const DEFAULT_LOGO = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="#1a1a2e" width="100" height="100" rx="10"/><circle cx="50" cy="40" r="20" fill="#e94560"/><rect x="30" y="65" width="40" height="25" rx="3" fill="#e94560"/><circle cx="50" cy="40" r="8" fill="#1a1a2e"/></svg>');
 
+        // HLS Player Extension ID
+        const HLS_PLAYER_EXTENSION_ID = 'eakdijdofmnclopcffkkgmndadhbjgka';
+        
         // M3U8 Playlist data embedded
         const playlistData = `#EXTINF:-1,Update file available at IPTV442WEB
 http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/61321.m3u8
@@ -894,7 +822,7 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
                         testImg.onerror = () => { img.src = DEFAULT_LOGO; };
                         testImg.src = channel.logo;
                     }
-                    item.addEventListener('click', () => playChannel(channel));
+                    item.addEventListener('click', () => selectChannel(channel));
                     channelList.appendChild(item);
                 });
 
@@ -908,173 +836,66 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
             }
         }
 
-        // CORS Proxy options for HTTP streams on HTTPS pages
-        const CORS_PROXIES = [
-            (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-            (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-            (url) => url, // Direct (no proxy)
-        ];
-        let currentProxyIndex = 0;
-
-        function getProxiedUrl(url) {
-            // Use CORS proxy for HTTP URLs
-            return CORS_PROXIES[currentProxyIndex](url);
-        }
-
-        // NEW FUNCTION: Open current stream in HLS Player extension
-        function openInHLSPlayer() {
-            if (!currentChannel) {
-                alert('Please select a channel first');
-                return;
-            }
-            
-            // Create the HLS Player URL
-            const hlsPlayerUrl = `https://www.hlsplayer.org/#${encodeURIComponent(currentChannel.url)}`;
-            
-            // Open in new tab
-            window.open(hlsPlayerUrl, '_blank');
-            
-            // Show notification
-            showNotification(`Opening "${currentChannel.name}" in HLS Player...`);
-        }
-
-        // Copy URL to clipboard for use in VLC
-        function copyStreamUrl() {
-            if (currentChannel) {
-                navigator.clipboard.writeText(currentChannel.url).then(() => {
-                    showNotification('Stream URL copied! Paste it in VLC Media Player');
-                }).catch(() => {
-                    prompt('Copy this URL and open in VLC:', currentChannel.url);
-                });
-            }
-        }
-
-        // Video player
-        let hls = null;
+        // HLS Player Extension ID
+        const HLS_PLAYER_EXTENSION_ID = 'eakdijdofmnclopcffkkgmndadhbjgka';
+        
+        // Global variable for current channel
         let currentChannel = null;
-        const video = document.getElementById('video-player');
-        const overlay = document.getElementById('player-overlay');
-        const loading = document.getElementById('loading');
-        const errorMessage = document.getElementById('error-message');
-        const nowPlaying = document.getElementById('now-playing');
 
-        function playChannel(channel, retryWithNextProxy = false) {
+        // Select channel
+        function selectChannel(channel) {
             currentChannel = channel;
 
             // Update active state
             document.querySelectorAll('.channel-item').forEach(item => {
                 item.classList.remove('active');
             });
-            const items = document.querySelectorAll('.channel-item');
-            for (let item of items) {
-                if (item.querySelector('.channel-name').textContent === channel.name) {
-                    item.classList.add('active');
-                    break;
-                }
-            }
-
-            // Show loading, hide others
-            overlay.classList.add('hidden');
-            loading.classList.add('show');
-            errorMessage.classList.remove('show');
+            event.currentTarget.classList.add('active');
 
             // Update now playing info
+            const nowPlaying = document.getElementById('now-playing');
             nowPlaying.style.display = 'flex';
             document.getElementById('now-playing-logo').src = channel.logo || DEFAULT_LOGO;
             document.getElementById('now-playing-name').textContent = channel.name;
             document.getElementById('now-playing-group').textContent = channel.group;
 
-            // Destroy previous HLS instance
-            if (hls) {
-                hls.destroy();
-                hls = null;
-            }
+            // Show the HLS launch button
+            const hlsBtn = document.getElementById('hls-launch-btn');
+            const noChannel = document.getElementById('no-channel');
+            hlsBtn.style.display = 'inline-flex';
+            noChannel.style.display = 'none';
 
-            // Get proxied URL for HTTPS compatibility
-            const streamUrl = getProxiedUrl(channel.url);
-            console.log('Loading stream:', streamUrl);
-
-            // Play the stream
-            if (Hls.isSupported()) {
-                hls = new Hls({
-                    enableWorker: true,
-                    lowLatencyMode: false,
-                    backBufferLength: 90,
-                    maxBufferLength: 30,
-                    maxMaxBufferLength: 60,
-                    xhrSetup: function(xhr, url) {
-                        // Handle relative URLs in HLS segments
-                        xhr.open('GET', url, true);
-                    }
-                });
-
-                hls.loadSource(streamUrl);
-                hls.attachMedia(video);
-
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    loading.classList.remove('show');
-                    video.play().catch(e => console.log('Autoplay prevented:', e));
-                });
-
-                hls.on(Hls.Events.ERROR, (event, data) => {
-                    console.error('HLS Error:', data);
-                    if (data.fatal) {
-                        // Try next proxy on fatal error
-                        if (currentProxyIndex < CORS_PROXIES.length - 1) {
-                            currentProxyIndex++;
-                            console.log('Trying next proxy:', currentProxyIndex);
-                            playChannel(currentChannel, true);
-                        } else {
-                            // Reset proxy index for next attempt
-                            currentProxyIndex = 0;
-                            loading.classList.remove('show');
-                            errorMessage.classList.add('show');
-                        }
-                    }
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // Native HLS support (Safari)
-                video.src = streamUrl;
-                video.addEventListener('loadedmetadata', () => {
-                    loading.classList.remove('show');
-                    video.play().catch(e => console.log('Autoplay prevented:', e));
-                });
-                video.addEventListener('error', () => {
-                    loading.classList.remove('show');
-                    errorMessage.classList.add('show');
-                });
-            }
+            // Show notification
+            showNotification(`Selected: ${channel.name}`);
         }
 
-        // Retry with next proxy
-        function retryCurrentChannel() {
+        // Open current channel in HLS Player
+        function openCurrentChannel() {
+            if (!currentChannel) {
+                alert('Please select a channel first');
+                return;
+            }
+            
+            // Create the HLS Player extension URL
+            const hlsUrl = `chrome-extension://${HLS_PLAYER_EXTENSION_ID}/player.html#${currentChannel.url}`;
+            
+            // Try to open in the extension
+            window.open(hlsUrl, '_blank');
+            
+            // Show notification
+            showNotification(`Opening "${currentChannel.name}" in HLS Player...`);
+        }
+
+        // Copy URL to clipboard
+        function copyStreamUrl() {
             if (currentChannel) {
-                currentProxyIndex = (currentProxyIndex + 1) % (CORS_PROXIES.length + 1);
-                document.getElementById('proxy-select').value = currentProxyIndex;
-                playChannel(currentChannel);
-            }
-        }
-
-        // Change proxy manually
-        function changeProxy(index) {
-            currentProxyIndex = parseInt(index);
-            if (currentChannel) {
-                playChannel(currentChannel);
-            }
-        }
-
-        // Fullscreen functionality
-        document.getElementById('fullscreen-btn').addEventListener('click', () => {
-            const container = document.querySelector('.player-container');
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            } else {
-                container.requestFullscreen().catch(err => {
-                    video.requestFullscreen().catch(e => console.log('Fullscreen failed:', e));
+                navigator.clipboard.writeText(currentChannel.url).then(() => {
+                    showNotification('Stream URL copied to clipboard!');
+                }).catch(() => {
+                    prompt('Copy this URL:', currentChannel.url);
                 });
             }
-        });
+        }
 
         // Notification system
         function showNotification(message) {
