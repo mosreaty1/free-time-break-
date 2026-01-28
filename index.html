@@ -356,30 +356,6 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
-        .additional-options {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .option-btn {
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .option-btn:hover {
-            background: rgba(233, 69, 96, 0.2);
-            border-color: #e94560;
-        }
-
         .channel-actions {
             display: flex;
             gap: 8px;
@@ -648,12 +624,6 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310490.m3u8
 http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310491.m3u8
 #EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 6 4K" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB 4K",ALWAN SPORT 6 4K
 http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310492.m3u8
-#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 7 4K" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB 4K",ALWAN SPORT 7 4K
-http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310493.m3u8
-#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 8 4K" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB 4K",ALWAN SPORT 8 4K
-http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310494.m3u8
-#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 9 4K" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB 4K",ALWAN SPORT 9 4K
-http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310495.m3u8
 #EXTINF:-1 tvg-id="" tvg-name="STARZPLAY IPTV442WEB 1 MINI" tvg-logo="https://up6.cc/2025/08/175598184783471.png" group-title="STARZPLAY IPTV442WEB",STARZPLAY IPTV442WEB 1 MINI
 http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/239108.m3u8
 #EXTINF:-1 tvg-id="" tvg-name="STARZPLAY IPTV442WEB 2 MINI" tvg-logo="https://up6.cc/2025/08/175598184788242.png" group-title="STARZPLAY IPTV442WEB",STARZPLAY IPTV442WEB 2 MINI
@@ -701,7 +671,7 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283473.m3u8
 #EXTINF:-1 tvg-id="" tvg-name="THMANYAH 3 4K" tvg-logo="https://up6.cc/2025/08/175526238688121.png" group-title="THMANYAH IPTV442WEB",THMANYAH 3 4K
 http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
 
-        // Parse M3U8 playlist
+        // Parse M3U8 playlist - FIXED VERSION
         function parseM3U8(data) {
             const channels = [];
             const lines = data.split('\n');
@@ -712,7 +682,7 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
                     const nextLine = lines[i + 1]?.trim();
                     if (nextLine && nextLine.startsWith('http')) {
                         const channel = parseExtInf(line, nextLine);
-                        if (channel && channel.group) {
+                        if (channel && channel.name && channel.url) {
                             channels.push(channel);
                         }
                     }
@@ -734,6 +704,9 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
                 const commaIndex = extinf.lastIndexOf(',');
                 if (commaIndex !== -1) {
                     channel.name = extinf.substring(commaIndex + 1).trim();
+                } else {
+                    // If no comma, use the whole line
+                    channel.name = extinf.replace('#EXTINF:-1', '').trim();
                 }
             }
 
@@ -747,12 +720,17 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
             const groupMatch = extinf.match(/group-title="([^"]*)"/);
             if (groupMatch) {
                 channel.group = groupMatch[1];
+            } else {
+                // Default group if none found
+                channel.group = 'Other Channels';
             }
 
             // Extract quality from name
-            const qualityMatch = channel.name?.match(/(MINI|LOW|VEGA|SD|HD|FHD|4K)/i);
-            if (qualityMatch) {
-                channel.quality = qualityMatch[1].toUpperCase();
+            if (channel.name) {
+                const qualityMatch = channel.name.match(/(MINI|LOW|VEGA|SD|HD|FHD|4K)/i);
+                if (qualityMatch) {
+                    channel.quality = qualityMatch[1].toUpperCase();
+                }
             }
 
             return channel;
@@ -775,12 +753,20 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
             const sidebar = document.getElementById('sidebar');
             sidebar.innerHTML = '';
 
+            if (!groups || Object.keys(groups).length === 0) {
+                sidebar.innerHTML = '<div class="no-results">No channels loaded</div>';
+                console.log('No groups to render');
+                return;
+            }
+
             let hasResults = false;
 
             Object.entries(groups).forEach(([groupName, channels]) => {
                 // Filter channels if search term exists
                 const filteredChannels = searchTerm
-                    ? channels.filter(ch => ch.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                    ? channels.filter(ch => 
+                        ch.name && ch.name.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
                     : channels;
 
                 if (filteredChannels.length === 0) return;
@@ -814,15 +800,26 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
                         <span class="channel-name">${channel.name}</span>
                         ${channel.quality ? `<span class="quality-badge">${channel.quality}</span>` : ''}
                     `;
+                    
                     // Try to load the actual logo
                     const img = item.querySelector('.channel-logo');
                     if (channel.logo) {
                         const testImg = new Image();
-                        testImg.onload = () => { img.src = channel.logo; };
-                        testImg.onerror = () => { img.src = DEFAULT_LOGO; };
+                        testImg.onload = () => { 
+                            if (img.src === DEFAULT_LOGO) {
+                                img.src = channel.logo; 
+                            }
+                        };
+                        testImg.onerror = () => { 
+                            // Keep default logo
+                        };
                         testImg.src = channel.logo;
                     }
-                    item.addEventListener('click', () => selectChannel(channel));
+                    
+                    item.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        selectChannel(channel);
+                    });
                     channelList.appendChild(item);
                 });
 
@@ -906,7 +903,7 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
             // Create new notification
             const notification = document.createElement('div');
             notification.className = 'notification';
-            notification.innerHTML = message;
+            notification.textContent = message;
             notification.style.cssText = `
                 position: fixed;
                 top: 20px;
@@ -920,6 +917,7 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
                 animation: fadeInOut 3s ease-in-out;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.3);
                 font-weight: 500;
+                pointer-events: none;
             `;
 
             // Add keyframe animation
@@ -932,10 +930,18 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
                     100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
                 }
             `;
-            document.head.appendChild(style);
+            
+            if (!document.querySelector('style[data-notification]')) {
+                style.setAttribute('data-notification', 'true');
+                document.head.appendChild(style);
+            }
 
             document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 3000);
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
         }
 
         // Search functionality
@@ -949,9 +955,41 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
         });
 
         // Initialize
-        const channels = parseM3U8(playlistData);
-        const groupedChannels = groupChannels(channels);
-        renderSidebar(groupedChannels);
+        let groupedChannels = {};
+        try {
+            console.log('Parsing playlist data...');
+            const channels = parseM3U8(playlistData);
+            console.log(`Parsed ${channels.length} channels`);
+            
+            if (channels.length > 0) {
+                console.log('First channel:', channels[0]);
+                groupedChannels = groupChannels(channels);
+                console.log('Grouped into:', Object.keys(groupedChannels).length, 'groups');
+                
+                // Render initial sidebar
+                renderSidebar(groupedChannels);
+                
+                // Auto-select first channel
+                setTimeout(() => {
+                    if (channels.length > 0) {
+                        const firstChannel = channels[0];
+                        selectChannel(firstChannel);
+                        
+                        // Find and click the first channel item
+                        const firstItem = document.querySelector('.channel-item');
+                        if (firstItem) {
+                            firstItem.click();
+                        }
+                    }
+                }, 100);
+            } else {
+                console.error('No channels parsed from playlist');
+                document.getElementById('sidebar').innerHTML = '<div class="no-results">No channels found in playlist</div>';
+            }
+        } catch (error) {
+            console.error('Error loading playlist:', error);
+            document.getElementById('sidebar').innerHTML = '<div class="no-results">Error loading channels</div>';
+        }
     </script>
 </body>
 </html>
