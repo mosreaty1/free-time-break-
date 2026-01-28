@@ -120,6 +120,7 @@
         }
 
         .channel-list {
+            display: block;
             background: rgba(0, 0, 0, 0.1);
         }
 
@@ -818,7 +819,7 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
                     
                     item.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        selectChannel(channel);
+                        selectChannel(channel, item);
                     });
                     channelList.appendChild(item);
                 });
@@ -840,14 +841,16 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
         let currentChannel = null;
 
         // Select channel
-        function selectChannel(channel) {
+        function selectChannel(channel, element) {
             currentChannel = channel;
 
             // Update active state
             document.querySelectorAll('.channel-item').forEach(item => {
                 item.classList.remove('active');
             });
-            event.currentTarget.classList.add('active');
+            if (element) {
+                element.classList.add('active');
+            }
 
             // Update now playing info
             const nowPlaying = document.getElementById('now-playing');
@@ -973,13 +976,8 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
                 setTimeout(() => {
                     if (channels.length > 0) {
                         const firstChannel = channels[0];
-                        selectChannel(firstChannel);
-                        
-                        // Find and click the first channel item
                         const firstItem = document.querySelector('.channel-item');
-                        if (firstItem) {
-                            firstItem.click();
-                        }
+                        selectChannel(firstChannel, firstItem);
                     }
                 }, 100);
             } else {
