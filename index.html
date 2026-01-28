@@ -977,7 +977,9 @@ http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
                     if (channels.length > 0) {
                         const firstChannel = channels[0];
                         const firstItem = document.querySelector('.channel-item');
-                        selectChannel(firstChannel, firstItem);
+                        if (firstItem) {
+                            selectChannel(firstChannel, firstItem);
+                        }
                     }
                 }, 100);
             } else {
