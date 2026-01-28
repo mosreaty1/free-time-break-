@@ -1,69 +1,194 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M3U8 Player - ES Module Worker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>IPTV442WEB Player</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        :root {
-            --primary: #6366f1;
-            --success: #10b981;
-            --danger: #ef4444;
-            --dark: #1e293b;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
-            padding: 20px;
+            color: #fff;
         }
 
         .container {
-            max-width: 1000px;
-            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
 
-        .header {
-            text-align: center;
-            padding: 25px;
-            background: rgba(30, 41, 59, 0.9);
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border: 2px solid var(--primary);
+        header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .header h1 {
-            color: var(--primary);
-            margin-bottom: 10px;
-            font-size: 2rem;
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #e94560;
         }
 
-        .player-card {
-            background: rgba(30, 41, 59, 0.9);
-            border-radius: 15px;
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-box input:focus {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+        }
+
+        .search-box::after {
+            content: "\1F50D";
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .category {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .category-header {
+            padding: 15px 20px;
+            background: rgba(233, 69, 96, 0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .category-header:hover {
+            background: rgba(233, 69, 96, 0.3);
+        }
+
+        .category-header .arrow {
+            transition: transform 0.3s ease;
+        }
+
+        .category.collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+
+        .category.collapsed .channel-list {
+            display: none;
+        }
+
+        .channel-list {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .channel-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .channel-item:hover {
+            background: rgba(233, 69, 96, 0.15);
+            padding-right: 25px;
+        }
+
+        .channel-item.active {
+            background: rgba(233, 69, 96, 0.3);
+            border-right: 3px solid #e94560;
+        }
+
+        .channel-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.1);
+            margin-left: 12px;
+        }
+
+        .channel-name {
+            flex: 1;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .quality-badge {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background: rgba(233, 69, 96, 0.5);
+            margin-right: 8px;
+        }
+
+        .player-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             padding: 20px;
-            margin-bottom: 20px;
-            border: 2px solid var(--primary);
         }
 
-        .video-container {
+        .player-container {
             position: relative;
             width: 100%;
-            padding-top: 56.25%;
+            max-width: 1200px;
+            margin: 0 auto;
             background: #000;
-            border-radius: 10px;
+            border-radius: 15px;
             overflow: hidden;
-            margin-bottom: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-top: 56.25%;
         }
 
         #video-player {
@@ -75,409 +200,937 @@
             background: #000;
         }
 
-        .controls {
-            display: grid;
-            gap: 15px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 2px solid #475569;
-            background: rgba(15, 23, 42, 0.8);
-            color: white;
-            font-size: 14px;
-            font-family: monospace;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
-        }
-
-        .buttons {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        button {
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
+        .player-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            transition: 0.3s;
+            background: rgba(0, 0, 0, 0.7);
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.3s ease;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: white;
+        .player-overlay.hidden {
+            opacity: 0;
         }
 
-        .btn-success {
-            background: var(--success);
-            color: white;
+        .player-overlay-content {
+            text-align: center;
         }
 
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            border: 2px solid rgba(99, 102, 241, 0.3);
+        .player-overlay-content .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
         }
 
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .player-overlay-content p {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
         }
 
-        .status {
-            background: rgba(15, 23, 42, 0.8);
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border-left: 4px solid var(--primary);
-        }
-
-        .code-box {
-            background: rgba(15, 23, 42, 0.8);
-            padding: 20px;
-            border-radius: 10px;
+        .now-playing {
             margin-top: 20px;
-            border: 1px solid #475569;
-            font-family: monospace;
-            font-size: 12px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            word-break: break-all;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+        .now-playing-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.1);
+            margin-left: 20px;
+        }
+
+        .now-playing-info h3 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .now-playing-info p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        .loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #e94560;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #e94560;
+            pointer-events: auto;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .error-message button {
+            margin-top: 15px;
+            padding: 10px 25px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .error-message button:hover {
+            background: #ff6b8a;
+        }
+
+        .proxy-selector {
+            margin-top: 10px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .proxy-selector label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .proxy-selector select {
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .proxy-selector select:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+
+        .controls-hint {
+            text-align: center;
+            margin-top: 15px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: 40vh;
+                border-left: none;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                order: 2;
+            }
+
+            .player-section {
+                order: 1;
+                padding: 10px;
+            }
+
+            .search-box {
+                width: 200px;
+            }
+
+            header {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .now-playing {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .now-playing-logo {
+                margin: 0 0 15px 0;
+            }
+        }
+
+        /* Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(233, 69, 96, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(233, 69, 96, 0.7);
+        }
+
+        .no-results {
+            padding: 30px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .player-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .control-btn {
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .control-btn:hover {
+            background: rgba(233, 69, 96, 0.8);
+        }
+
+        .control-btn.hls-player {
+            background: rgba(66, 133, 244, 0.7);
+        }
+
+        .control-btn.hls-player:hover {
+            background: rgba(66, 133, 244, 0.9);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-tv"></i> M3U8 Player with ES Module Worker</h1>
-            <p>Updated for Cloudflare's new ES Module system</p>
-        </div>
-
-        <div class="player-card">
-            <div class="video-container">
-                <video id="video-player" controls playsinline></video>
+        <header>
+            <div class="logo">IPTV442WEB Player</div>
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search channels...">
             </div>
+        </header>
 
-            <div class="controls">
-                <input type="text" id="stream-url" 
-                       value="http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/64700.m3u8"
-                       placeholder="Enter M3U8 URL...">
-                
-                <input type="text" id="worker-url" 
-                       placeholder="https://your-worker.workers.dev"
-                       value="">
-                <small style="color: #94a3b8; display: block; margin-top: 5px;">
-                    Your Cloudflare Worker URL (ES Module format required)
-                </small>
-
-                <div class="buttons">
-                    <button id="play-btn" class="btn-primary">
-                        <i class="fas fa-play"></i> Play
-                    </button>
-                    <button id="stop-btn" class="btn-secondary" disabled>
-                        <i class="fas fa-stop"></i> Stop
-                    </button>
-                    <button id="test-btn" class="btn-success">
-                        <i class="fas fa-bolt"></i> Test Worker
-                    </button>
-                    <button id="show-code" class="btn-secondary">
-                        <i class="fas fa-code"></i> Show Code
-                    </button>
+        <div class="main-content">
+            <section class="player-section">
+                <div class="player-container">
+                    <div class="video-wrapper">
+                        <video id="video-player" controls playsinline></video>
+                        <div class="player-overlay" id="player-overlay">
+                            <div class="player-overlay-content">
+                                <div class="icon">&#128250;</div>
+                                <p>Select a channel to start watching</p>
+                            </div>
+                        </div>
+                        <div class="loading" id="loading">
+                            <div class="spinner"></div>
+                        </div>
+                        <div class="error-message" id="error-message">
+                            <div class="icon">&#9888;</div>
+                            <p>Unable to load stream</p>
+                            <p style="font-size: 12px; margin-top: 10px;">The stream server may be down or blocking requests</p>
+                            <button onclick="retryCurrentChannel()">Retry with different proxy</button>
+                        </div>
+                        <div class="player-controls">
+                            <button class="control-btn" id="fullscreen-btn">
+                                <span>⛶</span> Fullscreen
+                            </button>
+                            <button class="control-btn hls-player" id="hls-player-btn" onclick="openInHLSPlayer()">
+                                <span>📺</span> Open in HLS Player
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="status">
-                    <div id="status-text">Ready to configure</div>
-                    <div id="status-details" style="font-size: 12px; opacity: 0.8; margin-top: 5px;"></div>
+                <div class="proxy-selector">
+                    <label for="proxy-select">Proxy Server:</label>
+                    <select id="proxy-select" onchange="changeProxy(this.value)">
+                        <option value="0">codetabs.com (Best for video)</option>
+                        <option value="1">corsproxy.io</option>
+                        <option value="2">allorigins.win</option>
+                        <option value="3">Direct (No Proxy)</option>
+                    </select>
+                    <button onclick="copyStreamUrl()" style="padding: 8px 15px; background: #e94560; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">Copy URL for VLC</button>
                 </div>
-            </div>
-        </div>
 
-        <div id="code-display" style="display: none;">
-            <div class="code-box">
-                <h4 style="color: var(--primary); margin-bottom: 10px;">ES Module Worker Code:</h4>
-                <pre id="worker-code"></pre>
-            </div>
+                <div class="now-playing" id="now-playing" style="display: none;">
+                    <img class="now-playing-logo" id="now-playing-logo" src="" alt="" onerror="this.style.display='none'">
+                    <div class="now-playing-info">
+                        <h3 id="now-playing-name">-</h3>
+                        <p id="now-playing-group">-</p>
+                    </div>
+                </div>
+
+                <p class="controls-hint">Select a channel from the list. If playback fails, try a different proxy or quality.</p>
+            </section>
+
+            <aside class="sidebar" id="sidebar">
+                <!-- Channels will be loaded here -->
+            </aside>
         </div>
     </div>
 
     <script>
-        // ========== WORKER CODE FOR COPY ==========
-        const WORKER_CODE = `// Cloudflare Worker ES Module
-export default {
-  async fetch(request) {
-    const url = new URL(request.url);
-    const streamUrl = url.searchParams.get('url');
-    
-    if (!streamUrl) {
-      return new Response(
-        'Add ?url=YOUR_M3U8_URL',
-        { 
-          status: 400,
-          headers: { 
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'text/plain'
-          }
-        }
-      );
-    }
-    
-    try {
-      const response = await fetch(streamUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0',
-          'Accept': '*/*',
-          'Origin': 'http://maveniptv.net',
-          'Referer': 'http://maveniptv.net/'
-        }
-      });
-      
-      const corsResponse = new Response(response.body, response);
-      corsResponse.headers.set('Access-Control-Allow-Origin', '*');
-      corsResponse.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      
-      return corsResponse;
-      
-    } catch (error) {
-      return new Response('Error: ' + error.message, { 
-        status: 500,
-        headers: { 
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'text/plain'
-        }
-      });
-    }
-  }
-};`;
+        // Default logo for channels with broken/missing images
+        const DEFAULT_LOGO = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="#1a1a2e" width="100" height="100" rx="10"/><circle cx="50" cy="40" r="20" fill="#e94560"/><rect x="30" y="65" width="40" height="25" rx="3" fill="#e94560"/><circle cx="50" cy="40" r="8" fill="#1a1a2e"/></svg>');
 
-        // ========== DOM ELEMENTS ==========
-        const videoPlayer = document.getElementById('video-player');
-        const streamUrlInput = document.getElementById('stream-url');
-        const workerUrlInput = document.getElementById('worker-url');
-        const playBtn = document.getElementById('play-btn');
-        const stopBtn = document.getElementById('stop-btn');
-        const testBtn = document.getElementById('test-btn');
-        const showCodeBtn = document.getElementById('show-code');
-        const statusText = document.getElementById('status-text');
-        const statusDetails = document.getElementById('status-details');
-        const codeDisplay = document.getElementById('code-display');
-        const workerCodeElement = document.getElementById('worker-code');
+        // M3U8 Playlist data embedded
+        const playlistData = `#EXTINF:-1,Update file available at IPTV442WEB
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/61321.m3u8
+#EXTINF:-1 tvg-id="55773" tvg-name="beIN IPTV442WEB 1 MINI" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB1_DIGITAL_Mono.png" group-title="beIN IPTV442WEB MINI",beIN IPTV442WEB 1 MINI
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/64689.m3u8
+#EXTINF:-1 tvg-id="4146" tvg-name="beIN IPTV442WEB 2 MINI" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB2_DIGITAL_Mono.png" group-title="beIN IPTV442WEB MINI",beIN IPTV442WEB 2 MINI
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/64690.m3u8
+#EXTINF:-1 tvg-id="3118" tvg-name="beIN IPTV442WEB 3 MINI" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB3_DIGITAL_Mono.png" group-title="beIN IPTV442WEB MINI",beIN IPTV442WEB 3 MINI
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/64694.m3u8
+#EXTINF:-1 tvg-id="369764" tvg-name="beIN IPTV442WEB 4 MINI" tvg-logo="http://maventv.one:8080/images/lsN-IAqck0z2FWt8wek5MnAlgNV5cF_aFFnYfnhifNJwcaN7k2i_ajNKJTIJnfSnaSMXkKA6VCmuSOGYzQlefqK3h271t6GmT0SmQgji3Jc.png" group-title="beIN IPTV442WEB MINI",beIN IPTV442WEB 4 MINI
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/64695.m3u8
+#EXTINF:-1 tvg-id="369843" tvg-name="beIN IPTV442WEB 5 MINI" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB5_DIGITAL_Mono.png" group-title="beIN IPTV442WEB MINI",beIN IPTV442WEB 5 MINI
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/64696.m3u8
+#EXTINF:-1 tvg-id="410411" tvg-name="beIN IPTV442WEB 6 MINI" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB6_DIGITAL_Mono.png" group-title="beIN IPTV442WEB MINI",beIN IPTV442WEB 6 MINI
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/64697.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 7 MINI" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB7_DIGITAL_Mono.png" group-title="beIN IPTV442WEB MINI",beIN IPTV442WEB 7 MINI
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/64698.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 8 MINI" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB8.png" group-title="beIN IPTV442WEB MINI",beIN IPTV442WEB 8 MINI
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/64699.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 9 MINI" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB9.png" group-title="beIN IPTV442WEB MINI",beIN IPTV442WEB 9 MINI
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/64700.m3u8
+#EXTINF:-1 tvg-id="55773" tvg-name="beIN IPTV442WEB 1 LOW" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB1_DIGITAL_Mono.png" group-title="beIN IPTV442WEB LOW",beIN IPTV442WEB 1 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/61321.m3u8
+#EXTINF:-1 tvg-id="4146" tvg-name="beIN IPTV442WEB 2 LOW" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB2_DIGITAL_Mono.png" group-title="beIN IPTV442WEB LOW",beIN IPTV442WEB 2 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/61322.m3u8
+#EXTINF:-1 tvg-id="3118" tvg-name="beIN IPTV442WEB 3 LOW" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB3_DIGITAL_Mono.png" group-title="beIN IPTV442WEB LOW",beIN IPTV442WEB 3 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/61324.m3u8
+#EXTINF:-1 tvg-id="369764" tvg-name="beIN IPTV442WEB 4 LOW" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB4_DIGITAL_Mono.png" group-title="beIN IPTV442WEB LOW",beIN IPTV442WEB 4 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/61325.m3u8
+#EXTINF:-1 tvg-id="369843" tvg-name="beIN IPTV442WEB 5 LOW" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB5_DIGITAL_Mono.png" group-title="beIN IPTV442WEB LOW",beIN IPTV442WEB 5 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/61326.m3u8
+#EXTINF:-1 tvg-id="410411" tvg-name="beIN IPTV442WEB 6 LOW" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB6_DIGITAL_Mono.png" group-title="beIN IPTV442WEB LOW",beIN IPTV442WEB 6 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/61327.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 7 LOW" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB7_DIGITAL_Mono.png" group-title="beIN IPTV442WEB LOW",beIN IPTV442WEB 7 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/61328.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 8 LOW" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB8.png" group-title="beIN IPTV442WEB LOW",beIN IPTV442WEB 8 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/61329.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 9 LOW" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB9.png" group-title="beIN IPTV442WEB LOW",beIN IPTV442WEB 9 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/61330.m3u8
+#EXTINF:-1 tvg-id="55773" tvg-name="beIN IPTV442WEB 1 VEGA" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB1_DIGITAL_Mono.png" group-title="beIN IPTV442WEB VEGA",beIN IPTV442WEB 1 VEGA
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78403.m3u8
+#EXTINF:-1 tvg-id="4146" tvg-name="beIN IPTV442WEB 2 VEGA" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB2_DIGITAL_Mono.png" group-title="beIN IPTV442WEB VEGA",beIN IPTV442WEB 2 VEGA
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78404.m3u8
+#EXTINF:-1 tvg-id="3118" tvg-name="beIN IPTV442WEB 3 VEGA" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB3_DIGITAL_Mono.png" group-title="beIN IPTV442WEB VEGA",beIN IPTV442WEB 3 VEGA
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78406.m3u8
+#EXTINF:-1 tvg-id="369764" tvg-name="beIN IPTV442WEB 4 VEGA" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB4_DIGITAL_Mono.png" group-title="beIN IPTV442WEB VEGA",beIN IPTV442WEB 4 VEGA
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78407.m3u8
+#EXTINF:-1 tvg-id="369843" tvg-name="beIN IPTV442WEB 5 VEGA" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB5_DIGITAL_Mono.png" group-title="beIN IPTV442WEB VEGA",beIN IPTV442WEB 5 VEGA
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78408.m3u8
+#EXTINF:-1 tvg-id="410411" tvg-name="beIN IPTV442WEB 6 VEGA" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB6_DIGITAL_Mono.png" group-title="beIN IPTV442WEB VEGA",beIN IPTV442WEB 6 VEGA
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78409.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 7 VEGA" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB7_DIGITAL_Mono.png" group-title="beIN IPTV442WEB VEGA",beIN IPTV442WEB 7 VEGA
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78410.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 8 VEGA" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB8.png" group-title="beIN IPTV442WEB VEGA",beIN IPTV442WEB 8 VEGA
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78411.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 9 VEGA" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB9.png" group-title="beIN IPTV442WEB VEGA",beIN IPTV442WEB 9 VEGA
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78412.m3u8
+#EXTINF:-1 tvg-id="55773" tvg-name="beIN IPTV442WEB 1 SD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB1_DIGITAL_Mono.png" group-title="beIN IPTV442WEB SD",beIN IPTV442WEB 1 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/40199.m3u8
+#EXTINF:-1 tvg-id="4146" tvg-name="beIN IPTV442WEB 2 SD" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB2_DIGITAL_Mono.png" group-title="beIN IPTV442WEB SD",beIN IPTV442WEB 2 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/40200.m3u8
+#EXTINF:-1 tvg-id="3118" tvg-name="beIN IPTV442WEB 3 SD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB3_DIGITAL_Mono.png" group-title="beIN IPTV442WEB SD",beIN IPTV442WEB 3 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/48477.m3u8
+#EXTINF:-1 tvg-id="369764" tvg-name="beIN IPTV442WEB 4 SD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB4_DIGITAL_Mono.png" group-title="beIN IPTV442WEB SD",beIN IPTV442WEB 4 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/48478.m3u8
+#EXTINF:-1 tvg-id="369843" tvg-name="beIN IPTV442WEB 5 SD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB5_DIGITAL_Mono.png" group-title="beIN IPTV442WEB SD",beIN IPTV442WEB 5 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/48479.m3u8
+#EXTINF:-1 tvg-id="410411" tvg-name="beIN IPTV442WEB 6 SD" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB6_DIGITAL_Mono.png" group-title="beIN IPTV442WEB SD",beIN IPTV442WEB 6 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/48480.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 7 SD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB7_DIGITAL_Mono.png" group-title="beIN IPTV442WEB SD",beIN IPTV442WEB 7 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/48481.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 8 SD" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB8.png" group-title="beIN IPTV442WEB SD",beIN IPTV442WEB 8 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/48482.m3u8
+#EXTINF:-1 tvg-id="logos-_beINIPTV442WEB9_AR.bein" tvg-name="beIN IPTV442WEB 9 SD" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB9.png" group-title="beIN IPTV442WEB SD",beIN IPTV442WEB 9 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/48483.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="beIN Global SD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/bein_IPTV442WEB_FTA_DIGITAL_Mono.png" group-title="beIN IPTV442WEB SD",beIN Global SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/358214.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="beIN News SD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/NEWS_DIGITAL_Mono.png" group-title="beIN IPTV442WEB SD",beIN News SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/358217.m3u8
+#EXTINF:-1 tvg-id="55773" tvg-name="beIN IPTV442WEB 1 HD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB1_DIGITAL_Mono.png" group-title="beIN IPTV442WEB HD",beIN IPTV442WEB 1 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/40215.m3u8
+#EXTINF:-1 tvg-id="4146" tvg-name="beIN IPTV442WEB 2 HD" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB2_DIGITAL_Mono.png" group-title="beIN IPTV442WEB HD",beIN IPTV442WEB 2 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/40216.m3u8
+#EXTINF:-1 tvg-id="3118" tvg-name="beIN IPTV442WEB 3 HD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB3_DIGITAL_Mono.png" group-title="beIN IPTV442WEB HD",beIN IPTV442WEB 3 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/40218.m3u8
+#EXTINF:-1 tvg-id="369764" tvg-name="beIN IPTV442WEB 4 HD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB4_DIGITAL_Mono.png" group-title="beIN IPTV442WEB HD",beIN IPTV442WEB 4 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/40219.m3u8
+#EXTINF:-1 tvg-id="369843" tvg-name="beIN IPTV442WEB 5 HD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB5_DIGITAL_Mono.png" group-title="beIN IPTV442WEB HD",beIN IPTV442WEB 5 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/40220.m3u8
+#EXTINF:-1 tvg-id="410411" tvg-name="beIN IPTV442WEB 6 HD" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB6_DIGITAL_Mono.png" group-title="beIN IPTV442WEB HD",beIN IPTV442WEB 6 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/40221.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 7 HD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB7_DIGITAL_Mono.png" group-title="beIN IPTV442WEB HD",beIN IPTV442WEB 7 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/40222.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 8 HD" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB8.png" group-title="beIN IPTV442WEB HD",beIN IPTV442WEB 8 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/40223.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 9 HD" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB9.png" group-title="beIN IPTV442WEB HD",beIN IPTV442WEB 9 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/40224.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="beIN Global HD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/bein_IPTV442WEB_FTA_DIGITAL_Mono.png" group-title="beIN IPTV442WEB HD",beIN Global HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/256951.m3u8
+#EXTINF:-1 tvg-id="7200" tvg-name="beIN News HD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/NEWS_DIGITAL_Mono.png" group-title="beIN IPTV442WEB HD",beIN News HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/256952.m3u8
+#EXTINF:-1 tvg-id="55773" tvg-name="beIN IPTV442WEB 1 FHD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB1_DIGITAL_Mono.png" group-title="beIN IPTV442WEB FHD",beIN IPTV442WEB 1 FHD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/10421.m3u8
+#EXTINF:-1 tvg-id="4146" tvg-name="beIN IPTV442WEB 2 FHD" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB2_DIGITAL_Mono.png" group-title="beIN IPTV442WEB FHD",beIN IPTV442WEB 2 FHD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/10422.m3u8
+#EXTINF:-1 tvg-id="3118" tvg-name="beIN IPTV442WEB 3 FHD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB3_DIGITAL_Mono.png" group-title="beIN IPTV442WEB FHD",beIN IPTV442WEB 3 FHD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/10424.m3u8
+#EXTINF:-1 tvg-id="369764" tvg-name="beIN IPTV442WEB 4 FHD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB4_DIGITAL_Mono.png" group-title="beIN IPTV442WEB FHD",beIN IPTV442WEB 4 FHD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/10425.m3u8
+#EXTINF:-1 tvg-id="369843" tvg-name="beIN IPTV442WEB 5 FHD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB5_DIGITAL_Mono.png" group-title="beIN IPTV442WEB FHD",beIN IPTV442WEB 5 FHD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/10426.m3u8
+#EXTINF:-1 tvg-id="410411" tvg-name="beIN IPTV442WEB 6 FHD" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB6_DIGITAL_Mono.png" group-title="beIN IPTV442WEB FHD",beIN IPTV442WEB 6 FHD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/10427.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 7 FHD" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB7_DIGITAL_Mono.png" group-title="beIN IPTV442WEB FHD",beIN IPTV442WEB 7 FHD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/10428.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 8 FHD" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB8.png" group-title="beIN IPTV442WEB FHD",beIN IPTV442WEB 8 FHD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/10429.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 9 FHD" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB9.png" group-title="beIN IPTV442WEB FHD",beIN IPTV442WEB 9 FHD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/10430.m3u8
+#EXTINF:-1 tvg-id="55773" tvg-name="beIN IPTV442WEB 4K 1" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB1_DIGITAL_Mono.png" group-title="beIN IPTV442WEB 4K",beIN IPTV442WEB 4K 1
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78395.m3u8
+#EXTINF:-1 tvg-id="4146" tvg-name="beIN IPTV442WEB 4K 2" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB2_DIGITAL_Mono.png" group-title="beIN IPTV442WEB 4K",beIN IPTV442WEB 4K 2
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78394.m3u8
+#EXTINF:-1 tvg-id="3118" tvg-name="beIN IPTV442WEB 4K 3" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB3_DIGITAL_Mono.png" group-title="beIN IPTV442WEB 4K",beIN IPTV442WEB 4K 3
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78402.m3u8
+#EXTINF:-1 tvg-id="369764" tvg-name="beIN IPTV442WEB 4K 4" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB4_DIGITAL_Mono.png" group-title="beIN IPTV442WEB 4K",beIN IPTV442WEB 4K 4
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78401.m3u8
+#EXTINF:-1 tvg-id="369843" tvg-name="beIN IPTV442WEB 4K 5" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB5_DIGITAL_Mono.png" group-title="beIN IPTV442WEB 4K",beIN IPTV442WEB 4K 5
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78400.m3u8
+#EXTINF:-1 tvg-id="410411" tvg-name="beIN IPTV442WEB 4K 6" tvg-logo="https://assets.bein.com/mena/sites/4/2021/02/beIN_IPTV442WEB6_DIGITAL_Mono.png" group-title="beIN IPTV442WEB 4K",beIN IPTV442WEB 4K 6
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78399.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 4K 7" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/beIN_IPTV442WEB7_DIGITAL_Mono.png" group-title="beIN IPTV442WEB 4K",beIN IPTV442WEB 4K 7
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78398.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 4K 8" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB8.png" group-title="beIN IPTV442WEB 4K",beIN IPTV442WEB 4K 8
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78397.m3u8
+#EXTINF:-1 tvg-id="2580" tvg-name="beIN IPTV442WEB 4K 9" tvg-logo="https://assets.bein.com/mena/sites/4/2023/09/logos-_beINIPTV442WEB9.png" group-title="beIN IPTV442WEB 4K",beIN IPTV442WEB 4K 9
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/78396.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="beIN Global 4K" tvg-logo="https://assets.bein.com/mena/sites/4/2015/06/bein_IPTV442WEB_FTA_DIGITAL_Mono.png" group-title="beIN IPTV442WEB 4K",beIN Global 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/358220.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 1 SD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 1 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310518.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 2 SD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 2 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310519.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 3 SD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 3 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310520.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 4 SD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 4 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310521.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 5 SD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 5 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310522.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 6 SD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 6 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310523.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 7 SD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 7 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/334435.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 8 SD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 8 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/334438.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 9 SD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 9 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/334441.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 10 SD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 10 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/334444.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 1 HD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 1 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/284609.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 2 HD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 2 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/284606.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 3 HD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 3 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/284603.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 4 HD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 4 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/284600.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 5 HD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 5 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/284597.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 6 HD" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB SD|HD",ALWAN SPORT 6 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/284594.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 1 4K" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB 4K",ALWAN SPORT 1 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310487.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 2 4K" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB 4K",ALWAN SPORT 2 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310488.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 3 4K" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB 4K",ALWAN SPORT 3 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310489.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 4 4K" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB 4K",ALWAN SPORT 4 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310490.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 5 4K" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB 4K",ALWAN SPORT 5 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310491.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 6 4K" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB 4K",ALWAN SPORT 6 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310492.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 7 4K" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB 4K",ALWAN SPORT 7 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310493.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 8 4K" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB 4K",ALWAN SPORT 8 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310494.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="ALWAN SPORT 9 4K" tvg-logo="https://up6.cc/2025/08/175619242952131.png" group-title="ALWAN IPTV442WEB 4K",ALWAN SPORT 9 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/310495.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="STARZPLAY IPTV442WEB 1 MINI" tvg-logo="https://up6.cc/2025/08/175598184783471.png" group-title="STARZPLAY IPTV442WEB",STARZPLAY IPTV442WEB 1 MINI
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/239108.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="STARZPLAY IPTV442WEB 2 MINI" tvg-logo="https://up6.cc/2025/08/175598184788242.png" group-title="STARZPLAY IPTV442WEB",STARZPLAY IPTV442WEB 2 MINI
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/239107.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="STARZPLAY IPTV442WEB 1 LOW" tvg-logo="https://up6.cc/2025/08/175598184783471.png" group-title="STARZPLAY IPTV442WEB",STARZPLAY IPTV442WEB 1 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/177222.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="STARZPLAY IPTV442WEB 2 LOW" tvg-logo="https://up6.cc/2025/08/175598184788242.png" group-title="STARZPLAY IPTV442WEB",STARZPLAY IPTV442WEB 2 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/177221.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="STARZPLAY IPTV442WEB 1 SD" tvg-logo="https://up6.cc/2025/08/175598184783471.png" group-title="STARZPLAY IPTV442WEB",STARZPLAY IPTV442WEB 1 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/130469.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="STARZPLAY IPTV442WEB 2 SD" tvg-logo="https://up6.cc/2025/08/175598184788242.png" group-title="STARZPLAY IPTV442WEB",STARZPLAY IPTV442WEB 2 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/130470.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="STARZPLAY IPTV442WEB 1 HD" tvg-logo="https://up6.cc/2025/08/175598184783471.png" group-title="STARZPLAY IPTV442WEB",STARZPLAY IPTV442WEB 1 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/124566.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="STARZPLAY IPTV442WEB 2 HD" tvg-logo="https://up6.cc/2025/08/175598184788242.png" group-title="STARZPLAY IPTV442WEB",STARZPLAY IPTV442WEB 2 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/124565.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="STARZPLAY IPTV442WEB 1 4K" tvg-logo="https://up6.cc/2025/08/175598184783471.png" group-title="STARZPLAY IPTV442WEB",STARZPLAY IPTV442WEB 1 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/203554.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="STARZPLAY IPTV442WEB 2 4K" tvg-logo="https://up6.cc/2025/08/175598184788242.png" group-title="STARZPLAY IPTV442WEB",STARZPLAY IPTV442WEB 2 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/203553.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="STARZPLAY IPTV442WEB 3 HD" tvg-logo="https://starzplay-img-prod-ssl.akamaized.net/prd-peg-data/default/images/logos/live/v2/starzplayIPTV442WEB-active.svg" group-title="STARZPLAY IPTV442WEB",STARZPLAY IPTV442WEB 3 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/247647.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="THMANYAH 1 LOW" tvg-logo="https://up6.cc/2025/08/175526238688121.png" group-title="THMANYAH IPTV442WEB",THMANYAH 1 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283443.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="THMANYAH 2 LOW" tvg-logo="https://up6.cc/2025/08/175526238688121.png" group-title="THMANYAH IPTV442WEB",THMANYAH 2 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283446.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="THMANYAH 3 LOW" tvg-logo="https://up6.cc/2025/08/175526238688121.png" group-title="THMANYAH IPTV442WEB",THMANYAH 3 LOW
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283449.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="THMANYAH 1 SD" tvg-logo="https://up6.cc/2025/08/175526238688121.png" group-title="THMANYAH IPTV442WEB",THMANYAH 1 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283452.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="THMANYAH 2 SD" tvg-logo="https://up6.cc/2025/08/175526238688121.png" group-title="THMANYAH IPTV442WEB",THMANYAH 2 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283455.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="THMANYAH 3 SD" tvg-logo="https://up6.cc/2025/08/175526238688121.png" group-title="THMANYAH IPTV442WEB",THMANYAH 3 SD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283458.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="THMANYAH 1 HD" tvg-logo="https://up6.cc/2025/08/175526238688121.png" group-title="THMANYAH IPTV442WEB",THMANYAH 1 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283461.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="THMANYAH 2 HD" tvg-logo="https://up6.cc/2025/08/175526238688121.png" group-title="THMANYAH IPTV442WEB",THMANYAH 2 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283464.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="THMANYAH 3 HD" tvg-logo="https://up6.cc/2025/08/175526238688121.png" group-title="THMANYAH IPTV442WEB",THMANYAH 3 HD
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283467.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="THMANYAH 1 4K" tvg-logo="https://up6.cc/2025/08/175526238688121.png" group-title="THMANYAH IPTV442WEB",THMANYAH 1 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283470.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="THMANYAH 2 4K" tvg-logo="https://up6.cc/2025/08/175526238688121.png" group-title="THMANYAH IPTV442WEB",THMANYAH 2 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283473.m3u8
+#EXTINF:-1 tvg-id="" tvg-name="THMANYAH 3 4K" tvg-logo="https://up6.cc/2025/08/175526238688121.png" group-title="THMANYAH IPTV442WEB",THMANYAH 3 4K
+http://maveniptv.net:80/live/ahmedELmetwally85/ah8759946/283476.m3u8`;
 
-        // ========== STATE ==========
-        let hls = null;
-        let currentWorkerUrl = '';
+        // Parse M3U8 playlist
+        function parseM3U8(data) {
+            const channels = [];
+            const lines = data.split('\n');
 
-        // ========== INITIALIZATION ==========
-        document.addEventListener('DOMContentLoaded', () => {
-            updateStatus('Ready', 'Configure Cloudflare Worker URL');
-            workerCodeElement.textContent = WORKER_CODE;
-            
-            // Load saved worker URL
-            const saved = localStorage.getItem('cf-worker-url');
-            if (saved) {
-                workerUrlInput.value = saved;
-                currentWorkerUrl = saved;
-            }
-        });
-
-        // ========== HELPER FUNCTIONS ==========
-        function updateStatus(text, details = '') {
-            statusText.textContent = text;
-            statusDetails.textContent = details;
-            console.log(`Status: ${text} - ${details}`);
-        }
-
-        function getWorkerUrl() {
-            const url = workerUrlInput.value.trim();
-            if (!url) {
-                throw new Error('Please enter your Cloudflare Worker URL');
-            }
-            
-            // Save for future
-            localStorage.setItem('cf-worker-url', url);
-            currentWorkerUrl = url.endsWith('/') ? url : url + '/';
-            return currentWorkerUrl;
-        }
-
-        function getProxiedUrl(originalUrl) {
-            const workerUrl = getWorkerUrl();
-            return `${workerUrl}?url=${encodeURIComponent(originalUrl)}`;
-        }
-
-        // ========== WORKER TESTING ==========
-        async function testWorker() {
-            try {
-                const workerUrl = getWorkerUrl();
-                updateStatus('Testing', `Connecting to ${workerUrl}...`);
-                
-                const testUrl = 'https://httpbin.org/get';
-                const testRequest = `${workerUrl}?url=${encodeURIComponent(testUrl)}`;
-                
-                const response = await fetch(testRequest);
-                const result = await response.json();
-                
-                if (response.ok && result.url === testUrl) {
-                    updateStatus('Worker OK', 'ES Module Worker is working!');
-                    alert('✅ Cloudflare Worker is working!\n\nYour Worker URL: ' + workerUrl);
-                } else {
-                    throw new Error('Invalid response from worker');
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line.startsWith('#EXTINF:')) {
+                    const nextLine = lines[i + 1]?.trim();
+                    if (nextLine && nextLine.startsWith('http')) {
+                        const channel = parseExtInf(line, nextLine);
+                        if (channel && channel.group) {
+                            channels.push(channel);
+                        }
+                    }
                 }
-            } catch (error) {
-                updateStatus('Worker Error', error.message);
-                alert(`❌ Worker test failed:\n${error.message}\n\nMake sure:\n1. You're using ES Module format\n2. Worker is deployed\n3. Code matches the example`);
+            }
+
+            return channels;
+        }
+
+        function parseExtInf(extinf, url) {
+            const channel = { url };
+
+            // Extract tvg-name
+            const nameMatch = extinf.match(/tvg-name="([^"]*)"/);
+            if (nameMatch) {
+                channel.name = nameMatch[1];
+            } else {
+                // Fallback: get name after the last comma
+                const commaIndex = extinf.lastIndexOf(',');
+                if (commaIndex !== -1) {
+                    channel.name = extinf.substring(commaIndex + 1).trim();
+                }
+            }
+
+            // Extract tvg-logo
+            const logoMatch = extinf.match(/tvg-logo="([^"]*)"/);
+            if (logoMatch) {
+                channel.logo = logoMatch[1];
+            }
+
+            // Extract group-title
+            const groupMatch = extinf.match(/group-title="([^"]*)"/);
+            if (groupMatch) {
+                channel.group = groupMatch[1];
+            }
+
+            // Extract quality from name
+            const qualityMatch = channel.name?.match(/(MINI|LOW|VEGA|SD|HD|FHD|4K)/i);
+            if (qualityMatch) {
+                channel.quality = qualityMatch[1].toUpperCase();
+            }
+
+            return channel;
+        }
+
+        // Group channels by category
+        function groupChannels(channels) {
+            const groups = {};
+            channels.forEach(channel => {
+                if (!groups[channel.group]) {
+                    groups[channel.group] = [];
+                }
+                groups[channel.group].push(channel);
+            });
+            return groups;
+        }
+
+        // Render sidebar
+        function renderSidebar(groups, searchTerm = '') {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.innerHTML = '';
+
+            let hasResults = false;
+
+            Object.entries(groups).forEach(([groupName, channels]) => {
+                // Filter channels if search term exists
+                const filteredChannels = searchTerm
+                    ? channels.filter(ch => ch.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                    : channels;
+
+                if (filteredChannels.length === 0) return;
+                hasResults = true;
+
+                const category = document.createElement('div');
+                category.className = 'category';
+
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                header.innerHTML = `
+                    <span>${groupName} (${filteredChannels.length})</span>
+                    <span class="arrow">&#9660;</span>
+                `;
+                header.addEventListener('click', () => {
+                    category.classList.toggle('collapsed');
+                });
+
+                const channelList = document.createElement('div');
+                channelList.className = 'channel-list';
+
+                filteredChannels.forEach(channel => {
+                    const item = document.createElement('div');
+                    item.className = 'channel-item';
+                    item.innerHTML = `
+                        <img class="channel-logo" src="${DEFAULT_LOGO}"
+                             alt="${channel.name}"
+                             data-src="${channel.logo || ''}"
+                             onload="if(this.dataset.src && this.src !== this.dataset.src) { this.src = this.dataset.src; }"
+                             onerror="this.onerror=null; this.src='${DEFAULT_LOGO}';">
+                        <span class="channel-name">${channel.name}</span>
+                        ${channel.quality ? `<span class="quality-badge">${channel.quality}</span>` : ''}
+                    `;
+                    // Try to load the actual logo
+                    const img = item.querySelector('.channel-logo');
+                    if (channel.logo) {
+                        const testImg = new Image();
+                        testImg.onload = () => { img.src = channel.logo; };
+                        testImg.onerror = () => { img.src = DEFAULT_LOGO; };
+                        testImg.src = channel.logo;
+                    }
+                    item.addEventListener('click', () => playChannel(channel));
+                    channelList.appendChild(item);
+                });
+
+                category.appendChild(header);
+                category.appendChild(channelList);
+                sidebar.appendChild(category);
+            });
+
+            if (!hasResults) {
+                sidebar.innerHTML = '<div class="no-results">No channels found</div>';
             }
         }
 
-        // ========== PLAYBACK FUNCTIONS ==========
-        async function playStream() {
-            const streamUrl = streamUrlInput.value.trim();
-            if (!streamUrl) {
-                updateStatus('Error', 'Please enter a stream URL');
+        // CORS Proxy options for HTTP streams on HTTPS pages
+        const CORS_PROXIES = [
+            (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+            (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+            (url) => url, // Direct (no proxy)
+        ];
+        let currentProxyIndex = 0;
+
+        function getProxiedUrl(url) {
+            // Use CORS proxy for HTTP URLs
+            return CORS_PROXIES[currentProxyIndex](url);
+        }
+
+        // NEW FUNCTION: Open current stream in HLS Player extension
+        function openInHLSPlayer() {
+            if (!currentChannel) {
+                alert('Please select a channel first');
                 return;
             }
+            
+            // Create the HLS Player URL
+            const hlsPlayerUrl = `https://www.hlsplayer.org/#${encodeURIComponent(currentChannel.url)}`;
+            
+            // Open in new tab
+            window.open(hlsPlayerUrl, '_blank');
+            
+            // Show notification
+            showNotification(`Opening "${currentChannel.name}" in HLS Player...`);
+        }
 
-            updateStatus('Loading', 'Connecting to stream...');
-            stopCurrentStream();
-
-            try {
-                const proxiedUrl = getProxiedUrl(streamUrl);
-                console.log('Proxied URL:', proxiedUrl);
-                
-                // Try HLS.js
-                if (Hls.isSupported()) {
-                    await playWithHls(proxiedUrl);
-                } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-                    // Safari native
-                    await playNative(proxiedUrl);
-                } else {
-                    throw new Error('HLS not supported');
-                }
-            } catch (error) {
-                console.error('Play error:', error);
-                updateStatus('Error', error.message);
-                
-                // Try fallback
-                tryFallback(streamUrl);
+        // Copy URL to clipboard for use in VLC
+        function copyStreamUrl() {
+            if (currentChannel) {
+                navigator.clipboard.writeText(currentChannel.url).then(() => {
+                    showNotification('Stream URL copied! Paste it in VLC Media Player');
+                }).catch(() => {
+                    prompt('Copy this URL and open in VLC:', currentChannel.url);
+                });
             }
         }
 
-        async function playWithHls(proxiedUrl) {
-            hls = new Hls({
-                debug: false,
-                enableWorker: true
-            });
-            
-            hls.loadSource(proxiedUrl);
-            hls.attachMedia(videoPlayer);
-            
-            return new Promise((resolve, reject) => {
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    videoPlayer.play().then(() => {
-                        updateStatus('Playing', 'Stream is playing');
-                        playBtn.disabled = true;
-                        stopBtn.disabled = false;
-                        resolve();
-                    }).catch(reject);
-                });
-                
-                hls.on(Hls.Events.ERROR, (event, data) => {
-                    if (data.fatal) reject(new Error('HLS error'));
-                });
-            });
-        }
+        // Video player
+        let hls = null;
+        let currentChannel = null;
+        const video = document.getElementById('video-player');
+        const overlay = document.getElementById('player-overlay');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('error-message');
+        const nowPlaying = document.getElementById('now-playing');
 
-        async function playNative(proxiedUrl) {
-            videoPlayer.src = proxiedUrl;
-            
-            return new Promise((resolve, reject) => {
-                videoPlayer.onloadeddata = () => {
-                    videoPlayer.play().then(() => {
-                        updateStatus('Playing', 'Native playback');
-                        playBtn.disabled = true;
-                        stopBtn.disabled = false;
-                        resolve();
-                    }).catch(reject);
-                };
-                videoPlayer.onerror = reject;
-            });
-        }
+        function playChannel(channel, retryWithNextProxy = false) {
+            currentChannel = channel;
 
-        function tryFallback(url) {
-            updateStatus('Fallback', 'Trying direct playback...');
-            
-            videoPlayer.src = url;
-            videoPlayer.load();
-            
-            videoPlayer.play().then(() => {
-                updateStatus('Playing', 'Direct (may have issues)');
-                playBtn.disabled = true;
-                stopBtn.disabled = false;
-            }).catch(e => {
-                updateStatus('Failed', 'All methods failed');
-                alert(`Cannot play stream:\n${e.message}`);
+            // Update active state
+            document.querySelectorAll('.channel-item').forEach(item => {
+                item.classList.remove('active');
             });
-        }
+            const items = document.querySelectorAll('.channel-item');
+            for (let item of items) {
+                if (item.querySelector('.channel-name').textContent === channel.name) {
+                    item.classList.add('active');
+                    break;
+                }
+            }
 
-        function stopCurrentStream() {
+            // Show loading, hide others
+            overlay.classList.add('hidden');
+            loading.classList.add('show');
+            errorMessage.classList.remove('show');
+
+            // Update now playing info
+            nowPlaying.style.display = 'flex';
+            document.getElementById('now-playing-logo').src = channel.logo || DEFAULT_LOGO;
+            document.getElementById('now-playing-name').textContent = channel.name;
+            document.getElementById('now-playing-group').textContent = channel.group;
+
+            // Destroy previous HLS instance
             if (hls) {
-                hls.stopLoad();
-                hls.detachMedia();
                 hls.destroy();
                 hls = null;
             }
-            
-            videoPlayer.pause();
-            videoPlayer.src = '';
-            
-            playBtn.disabled = false;
-            stopBtn.disabled = true;
+
+            // Get proxied URL for HTTPS compatibility
+            const streamUrl = getProxiedUrl(channel.url);
+            console.log('Loading stream:', streamUrl);
+
+            // Play the stream
+            if (Hls.isSupported()) {
+                hls = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: false,
+                    backBufferLength: 90,
+                    maxBufferLength: 30,
+                    maxMaxBufferLength: 60,
+                    xhrSetup: function(xhr, url) {
+                        // Handle relative URLs in HLS segments
+                        xhr.open('GET', url, true);
+                    }
+                });
+
+                hls.loadSource(streamUrl);
+                hls.attachMedia(video);
+
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    loading.classList.remove('show');
+                    video.play().catch(e => console.log('Autoplay prevented:', e));
+                });
+
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    console.error('HLS Error:', data);
+                    if (data.fatal) {
+                        // Try next proxy on fatal error
+                        if (currentProxyIndex < CORS_PROXIES.length - 1) {
+                            currentProxyIndex++;
+                            console.log('Trying next proxy:', currentProxyIndex);
+                            playChannel(currentChannel, true);
+                        } else {
+                            // Reset proxy index for next attempt
+                            currentProxyIndex = 0;
+                            loading.classList.remove('show');
+                            errorMessage.classList.add('show');
+                        }
+                    }
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Native HLS support (Safari)
+                video.src = streamUrl;
+                video.addEventListener('loadedmetadata', () => {
+                    loading.classList.remove('show');
+                    video.play().catch(e => console.log('Autoplay prevented:', e));
+                });
+                video.addEventListener('error', () => {
+                    loading.classList.remove('show');
+                    errorMessage.classList.add('show');
+                });
+            }
         }
 
-        // ========== EVENT LISTENERS ==========
-        playBtn.addEventListener('click', playStream);
-        stopBtn.addEventListener('click', () => {
-            stopCurrentStream();
-            updateStatus('Stopped', 'Playback stopped');
-        });
-        
-        testBtn.addEventListener('click', testWorker);
-        
-        showCodeBtn.addEventListener('click', () => {
-            codeDisplay.style.display = codeDisplay.style.display === 'none' ? 'block' : 'none';
-            
-            // Copy to clipboard
-            navigator.clipboard.writeText(WORKER_CODE).then(() => {
-                alert('✅ Worker code copied to clipboard!\n\nPaste this in Cloudflare Worker editor.');
-            });
-        });
+        // Retry with next proxy
+        function retryCurrentChannel() {
+            if (currentChannel) {
+                currentProxyIndex = (currentProxyIndex + 1) % (CORS_PROXIES.length + 1);
+                document.getElementById('proxy-select').value = currentProxyIndex;
+                playChannel(currentChannel);
+            }
+        }
 
-        // Enter key support
-        streamUrlInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') playStream();
-        });
-        
-        workerUrlInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') testWorker();
-        });
+        // Change proxy manually
+        function changeProxy(index) {
+            currentProxyIndex = parseInt(index);
+            if (currentChannel) {
+                playChannel(currentChannel);
+            }
+        }
 
-        // Auto-test if URL exists
-        window.addEventListener('load', () => {
-            if (workerUrlInput.value.trim()) {
-                setTimeout(testWorker, 1000);
+        // Fullscreen functionality
+        document.getElementById('fullscreen-btn').addEventListener('click', () => {
+            const container = document.querySelector('.player-container');
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                container.requestFullscreen().catch(err => {
+                    video.requestFullscreen().catch(e => console.log('Fullscreen failed:', e));
+                });
             }
         });
+
+        // Notification system
+        function showNotification(message) {
+            // Remove existing notification
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            // Create new notification
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(233, 69, 96, 0.9);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                z-index: 10000;
+                animation: fadeInOut 3s ease-in-out;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                font-weight: 500;
+            `;
+
+            // Add keyframe animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeInOut {
+                    0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                    10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                }
+            `;
+            document.head.appendChild(style);
+
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('search-input');
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                renderSidebar(groupedChannels, e.target.value);
+            }, 300);
+        });
+
+        // Initialize
+        const channels = parseM3U8(playlistData);
+        const groupedChannels = groupChannels(channels);
+        renderSidebar(groupedChannels);
     </script>
 </body>
 </html>
